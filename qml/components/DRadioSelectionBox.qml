@@ -52,12 +52,6 @@ Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            Rectangle {
-                anchors.fill: parent
-                color:"transparent"
-                border.color: "red"
-            }
-
             DText {
                 id: text
 
@@ -68,8 +62,5 @@ Rectangle {
 
             }
         }
-
-
-
     }
 }

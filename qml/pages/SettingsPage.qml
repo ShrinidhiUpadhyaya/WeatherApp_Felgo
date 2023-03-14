@@ -8,133 +8,56 @@ import "../components"
 DAppPage {
     id: page
 
-    property var allCityNames: ["Bamberg","Berlin","Mumbai","Stuttgart"]
-
-    property var citiesSelectedIndex: [0,1,2]
-
-    property int currentCityIndex: 0
+    property var settingsPages: []
 
     ListModel {
         id: settingsListModel
 
         ListElement {
-            text: "Cities"
-            icon: "cityWhiteIcon"
+            text: "HomePage"
+            icon: "homeWhiteIcon"
         }
 
         ListElement {
             text: "FAQ"
             icon: "faqIcon"
         }
-    }
 
-    Popup {
-        id: popup
-
-        width: parent.width / 1.2
-        height: parent.height / 2
-        anchors.centerIn: parent
-
-        background: Rectangle {
-            radius: dp(16)
-            color: "#124951"
+        ListElement {
+            text: "Credits"
+            icon: "creditsIcon"
         }
-
-
-        AppListView  {
-            id: placesSearchListView
-
-            model: allCityNames
-            backgroundColor: appThemes.transparentColor
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-
-            delegate: DRadioSelectionBox {
-                width: parent.width
-                height: dp(32)
-                text: modelData
-                selected: citiesSelectedIndex[currentCityIndex] === index
-
-                onClicked: {
-                    setCity(index)
-                    popup.close()
-                }
-            }
-        }
-
-        modal: true
-        focus: true
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     }
-
 
     ColumnLayout {
         width: parent.width - appThemes.doubleMargin
         height: parent.height - appThemes.doubleMargin
         anchors.centerIn: parent
 
-        ListView {
+        Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            model: settingsListModel
-            spacing: appThemes.margin
-            delegate: DIconText {
+
+            ListView {
                 width: parent.width
-                height: dp(48)
-                icon: model.icon
-                text: model.text
-            }
-        }
-
-        Rectangle {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            color:"transparent"
-            border.color: "red"
-
-            Column {
-                anchors.fill: parent
+                height: parent.height
+                model: settingsListModel
                 spacing: appThemes.margin
+                delegate: DIconText {
+                    width: parent.width
+                    height: dp(48)
 
-                Repeater {
-                    model: ["City 1", "City 2", "City 3"]
+                    Rectangle {
+                        anchors.fill: parent
+                        color:"transparent"
+                        border.color: "red"
+                    }
 
-                    RowLayout {
-                        width: parent.width
-                        height: dp(32)
-                        spacing: appThemes.doubleMargin
+                    icon: model.icon
+                    text: model.text
 
-                        Item {
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-
-                            Rectangle {
-                                anchors.fill: parent
-                                color:"transparent"
-                                border.color: "red"
-                            }
-
-                            DText {
-                                text: modelData
-                                font.bold: true
-                                font.pixelSize: dp(16)
-                                verticalAlignment: Text.AlignVCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-                        }
-
-                        DSelectionBox {
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                            text: allCityNames[citiesSelectedIndex[index]]
-
-                            onClicked: {
-                                currentCityIndex = index
-                                console.log(currentCityIndex)
-                                popup.open()
-                            }
-                        }
+                    onClicked: {
+                        navStack.push(settingsPages[index])
                     }
                 }
             }
@@ -165,21 +88,18 @@ DAppPage {
                     horizontalAlignment: Text.AlignHCenter
                 }
             }
-
-
-
-//            Rectangle {
-//                anchors.fill: parent
-//                color: "transparent"
-//                border.color: "red"
-//            }
         }
     }
 
-    function setCity(index) {
-        var temp = citiesSelectedIndex
-        temp[currentCityIndex]= index
-        citiesSelectedIndex = temp;
 
+
+    function initPages() {
+        settingsPages[0] = Qt.createComponent("CitiesSettingsPage.qml");
+        settingsPages[1] = Qt.createComponent("FAQSettingsPage.qml");
+        settingsPages[2] = Qt.createComponent("CreditsSettingsPage.qml");
+    }
+
+    Component.onCompleted: {
+        page.initPages();
     }
 }

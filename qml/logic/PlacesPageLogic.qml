@@ -6,47 +6,35 @@ import Felgo
 Item {
     id: logic
 
-    property string geocodeURL: "https://geocoding-api.open-meteo.com/v1/search?name="
+    property alias cityListModel: cityListModel
+    property alias deletion: deletion
 
-    property var longitudeList:[]
-    property var latitudeList:[]
-    property var countryList: []
-    property var placeList: []
-    property var timezoneList: []
+    property int searchSelectedIndex: -1
 
-    //    property string placeName: ""
-    //    property string latitude: ""
-    //    property string longitude: ""
-    //    property string subURL: ""
-    //    property string timezone: ""
+    property bool enableDeletion: false
 
     property string temperatureUnit: ""
 
+    property var countryList: []
+    property var deleteItems: []
+    property var longitudeList:[]
+    property var latitudeList:[]
+    property var placeList: []
+    property var timezoneList: []
 
+    property var placesDataStack: []
 
-    property bool requestACK: false
-
-    property alias cityListModel: cityListModel
-
-
+    signal error()
 
     ListModel {
         id: cityListModel
     }
-
-    //    onRequestACKChanged: {
-    //        if(requestACK) {
-    //            hourly.parseValueUnits(internal.hourlyData.hourly_units)
-    //            hourly.parseHourlyData(internal.hourlyData.hourly,logic.placeName)
-    //        }
-    //    }
 
     QtObject {
         id: internal
 
         property var hourlyData;
         property var dailyData;
-
     }
 
     QtObject {
@@ -57,7 +45,7 @@ Item {
         property string longitude: ""
         property string timezone: ""
 
-        readonly property string temperatureCode: hourly.temperatureNeeded ? "temperature_2m," : ""
+        property string temperatureCode: hourly.temperatureNeeded ? "temperature_2m," : ""
         property string timezoneCode:  "&timezone=" + hourly.timezone
         property string weatherCode: hourly.weatherCodeNeeded ? "weathercode," : ""
         property string subURL: ""
@@ -85,15 +73,30 @@ Item {
                 if(res.ok) {
                     var data = res.body;
                     internal.hourlyData = data;
-                    daily.requestData(daily.latitude,daily.longitude,daily.timezone);
-                    hourly.parseValueUnits(internal.hourlyData.hourly_units)
-                    hourly.parseHourlyData(internal.hourlyData.hourly,hourly.placeName)
+                    console.log(internal.hourlyData)
+                    hourly.errorCheck(internal.hourlyData);
                 }
                 else {
                     console.log(err.message)
                     console.log(err.response)
+                    logic.error()
                 }
             });
+        }
+
+        function errorCheck(data) {
+            console.log("Length of data",data.hourly.time.length)
+            if(data.hourly.time) {
+                console.log("Victory")
+                console.log(data.hourly.time)
+                daily.requestData(daily.latitude,daily.longitude,daily.timezone);
+                hourly.parseValueUnits(internal.hourlyData.hourly_units)
+                hourly.parseHourlyData(internal.hourlyData.hourly,hourly.placeName)
+            } else {
+                console.log("Lost")
+                console.log(data.hourly.time)
+                logic.error()
+            }
         }
 
         function parseHourlyData(data,placeName) {
@@ -101,27 +104,31 @@ Item {
 
             var parsedTimeData = data.time;
             var parsedTemperatureData = data.temperature_2m;
-            var parsedWeatherIconData = data.weathercode;
+            var parsedWeatherIconDescription = data.weathercode;
+            var parsedWeatherIconCode = data.weathercode;
+
 
             const index = parsedTimeData.findIndex(item => item > appData.currentTime); // find the index of the first item greater than current time
 
             if (index !== -1) {
                 parsedTemperatureData = parsedTemperatureData.slice(index-1)
                 parsedTemperatureData = parsedTemperatureData[0].toFixed(0) + temperatureUnit
-                parsedWeatherIconData = parsedWeatherIconData.slice(index-1)
-                parsedWeatherIconData = parsedWeatherIconData[0]
-                parsedWeatherIconData = classifyWeatherIconDescription(parsedWeatherIconData)
+                parsedWeatherIconDescription = parsedWeatherIconDescription.slice(index-1)
+                parsedWeatherIconDescription = parsedWeatherIconDescription[0]
+                parsedWeatherIconDescription = classifyWeatherIconDescription(parsedWeatherIconDescription)
+
+                parsedWeatherIconCode = parsedWeatherIconCode.slice(index-1)
+                parsedWeatherIconCode = parsedWeatherIconCode[0]
+                parsedWeatherIconCode = appData.getWeatherIcon(parsedWeatherIconCode)
 
                 console.log("PlaceName:",placeName)
                 console.log("Temperature:",parsedTemperatureData)
-                console.log("parsedWeatherIconData",parsedWeatherIconData)
+                cityListModel.append({"place":placeName,"temperature":parsedTemperatureData,"weatherIcon":parsedWeatherIconCode,"weatherDescription":parsedWeatherIconDescription,"sunriseTime":"","sunsetTime":""})
 
-                cityListModel.append({"place":placeName,"temperature":parsedTemperatureData ,"weatherDescription":parsedWeatherIconData,"sunriseTime":"","sunsetTime":""})
+                var tempPlacesDataStack=placesDataStack;
+                tempPlacesDataStack[placesDataStack.length] = [placesPageData.placeList[placesPageData.searchSelectedIndex],placesPageData.latitudeList[placesPageData.searchSelectedIndex],placesPageData.longitudeList[placesPageData.searchSelectedIndex],placesPageData.timezoneList[placesPageData.searchSelectedIndex]]
+                placesDataStack = tempPlacesDataStack;
             }
-
-            //        page.requestDailyWeatherData(longitudeList[searchSelectedIndex],latitudeList[searchSelectedIndex],timezoneList[searchSelectedIndex]);
-            //        popup.close()
-//            logic.clearSearchData()
         }
 
         function parseValueUnits(data) {
@@ -137,7 +144,7 @@ Item {
         property string timezone: ""
 
         function getDailyRequestURL() {
-            return "https://api.open-meteo.com/v1/dwd-icon?latitude=" + daily.latitude + "&longitude=" + daily.longitude + "&daily=sunrise,sunset&timezone=" + daily.timezone
+            return appData.apiURL + daily.latitude + "&longitude=" + daily.longitude + "&daily=sunrise,sunset&timezone=" + daily.timezone
         }
 
         function requestData() {
@@ -150,7 +157,7 @@ Item {
                 if(res.ok) {
                     var data = res.body
                     internal.dailyData = data.daily;
-                    daily.parseDailyWeatherData(internal.dailyData);
+                    daily.errorCheck(internal.dailyData)
                 }
                 else {
                     console.log(err.message)
@@ -159,42 +166,121 @@ Item {
             });
         }
 
+        function errorCheck(data) {
+            if(data.sunrise) {
+                console.log("Victory")
+                daily.parseDailyWeatherData(internal.dailyData);
+            } else {
+                console.log("Lost")
+            }
+        }
+
         function parseDailyWeatherData(data) {
             console.log("Parsing Daily Weather Data",data)
 
-            var sunriseTime = daily.convertDailyTime(data.sunrise[0])
-            var sunsetTime = daily.convertDailyTime(data.sunset[0])
-
-            console.log(cityListModel.count)
-
-            cityListModel.setProperty(cityListModel.count-1,"sunriseTime",sunriseTime)
-            cityListModel.setProperty(cityListModel.count-1,"sunsetTime",sunsetTime)
-
+            var sunriseTime = appData.convertDailyTime(data.sunrise[0])
+            var sunsetTime = appData.convertDailyTime(data.sunset[0])
 
             console.log("Sunrise Time:",sunriseTime)
             console.log("Sunset Time:",sunsetTime)
-        }
 
-        function convertDailyTime(data) {
-            console.log("Convert Time")
-
-            var dateObjects = new Date(data);
-
-            var hours = dateObjects.getHours() ;
-            var AmOrPm = hours >= 12 ? 'PM' : 'AM';
-            hours = (hours % 12) || 12;
-            var minutes = dateObjects.getMinutes()
-            minutes = minutes < 10 ? "0"+minutes : minutes;
-            hours = hours < 10 ? "0"+hours : hours;
-            var finalTime = hours + ":" + minutes + " " + AmOrPm;
-            console.log(finalTime)
-            return finalTime
+            cityListModel.setProperty(cityListModel.count-1,"sunriseTime",sunriseTime)
+            cityListModel.setProperty(cityListModel.count-1,"sunsetTime",sunsetTime)
         }
     }
 
-    function requestPlaces(text) {
+    QtObject {
+        id: deletion
+
+        function enableDeleteItems(index) {
+            console.log("Enabled Delete Items:",index)
+
+            var tempDeleteItems=[]
+
+            for(var i=0;i<cityListModel.count;i++) {
+                tempDeleteItems[i] = false
+            }
+
+            logic.deleteItems = tempDeleteItems
+
+            console.log(logic.deleteItems)
+        }
+
+        function selectedForDeletion(index) {
+            var tempDeleteItems = logic.deleteItems
+            tempDeleteItems[index] = !tempDeleteItems[index]
+            disableDeletion(tempDeleteItems)
+            logic.deleteItems = tempDeleteItems
+            console.log(logic.deleteItems)
+        }
+
+        function disableDeletion(data) {
+            console.log("Disable Deletion",data)
+            var count = 0;
+            for(var i=0;i<data.length;i++) {
+                if(data[i] === false) {
+                    count++;
+                }
+            }
+
+            if(count === data.length) {
+                logic.enableDeletion = false
+            }
+        }
+
+        function initDeleteItems() {
+
+        }
+    }
+
+    function sendRequest(placeName,latitude,longitude,timezone) {
+        console.log("Sending Request")
+        logic.requestHourlyWeather(placeName,latitude,longitude,timezone)
+        logic.requestDailyWeatherData(latitude,longitude,timezone)
+    }
+
+    function initialDefaultRequestPlaces(text) {
+        console.log("Requesting Places")
         HttpRequest
-        .get(geocodeURL+text)
+        .get(appData.geocodeURL+text)
+        .timeout(5000)
+        .end(function(err, res) {
+            if(res.ok) {
+                var data = res.body.results
+                var place = []
+                var country = []
+                var longitude = []
+                var latitude = []
+                var timezone = []
+
+                data.forEach(function(result) {
+                    country.push(result.country)
+                    place.push(result.name)
+                    longitude.push((result.longitude.toFixed(2)))
+                    latitude.push((result.latitude.toFixed(2)))
+                    timezone.push((result.timezone))
+                })
+
+                logic.countryList = country
+                logic.placeList = place
+                logic.longitudeList = longitude
+                logic.latitudeList = latitude
+                logic.timezoneList = timezone
+
+                placesPageData.loadSearchRequest()
+            }
+            else {
+                console.log(err.message)
+                console.log(err.response)
+            }
+        });
+    }
+
+
+    function requestPlaces(text) {
+        console.log("Requesting Places")
+        HttpRequest
+        .get(appData.geocodeURL+text)
         .timeout(5000)
         .end(function(err, res) {
             if(res.ok) {
@@ -225,7 +311,6 @@ Item {
             }
         });
     }
-
 
     function requestHourlyWeather(placeName,placeLatitude,placeLongitude,placeTimeZone) {
         console.log("Request Hourly Weather",placeName,placeLatitude,placeLongitude,placeTimeZone)
@@ -271,6 +356,12 @@ Item {
         }
         else if (appData.snowValues.includes(value)) {
             return "Snow"
+        }
+    }
+
+    function loadSearchRequest() {
+        if(placesPageData.placeList.length > 0) {
+            placesPageData.sendRequest(placesPageData.placeList[placesPageData.searchSelectedIndex],placesPageData.latitudeList[placesPageData.searchSelectedIndex],placesPageData.longitudeList[placesPageData.searchSelectedIndex],placesPageData.timezoneList[placesPageData.searchSelectedIndex])
         }
     }
 }

@@ -22,6 +22,20 @@ App {
                 unselectedIcon: setIcon("homeDisabled")
             }
 
+            onSelected: {
+                console.log("Selected",placesPageData.placesDataStack.length)
+                console.log(placesPageData.placesDataStack[homePageData.homePageCityIndex])
+                if(!(placesPageData.placesDataStack.length < 1)) {
+                    console.log(placesPageData.placesDataStack[homePageData.homePageCityIndex])
+                    var data = placesPageData.placesDataStack[homePageData.homePageCityIndex];
+                    var latitude = data[1]
+                    var longitude = data[2]
+                    var timezone = data[3]
+
+                    homePageData.requestHourlyWeather(latitude,longitude,timezone)
+                }
+            }
+
             NavigationStack {
                 initialPage: HomePage { }
             }
@@ -36,6 +50,7 @@ App {
                 selectedIcon: setIcon("cityEnabled")
                 unselectedIcon: setIcon("cityDisabled")
             }
+
             NavigationStack {
                 PlacesPage { }
             }
@@ -51,6 +66,8 @@ App {
                 unselectedIcon: setIcon("settingsDisabled")
             }
             NavigationStack {
+                id: navStack
+
                 SettingsPage {
                 }
             }

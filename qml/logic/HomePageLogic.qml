@@ -38,19 +38,25 @@ Item {
     property bool windDirectionNeeded: true
     property bool soilMoistureNeeded: true
 
+    property int homePageCityIndex: 0
+
+
+    signal error()
+    signal allRequestsCompleted();
+
     QtObject {
         id: internal
 
         property var hourlyData;
         property var dailyData;
 
-        property bool hourlyRequestACK: false
+//        property bool hourlyRequestACK: false
 
-        onHourlyRequestACKChanged:  {
-            console.log("####hourlyRequestACK Changed:",hourlyRequestACK)
-            if(hourlyRequestACK)
-                logic.requestDailyWeather(hourly.latitude,hourly.longitude,hourly.timezone)
-        }
+//        onHourlyRequestACKChanged:  {
+//            console.log("####hourlyRequestACK Changed:",hourlyRequestACK)
+//            if(hourlyRequestACK)
+//                logic.requestDailyWeather(hourly.latitude,hourly.longitude,hourly.timezone)
+//        }
     }
 
     QtObject {
@@ -88,7 +94,7 @@ Item {
         }
 
         function requestData() {
-            internal.hourlyRequestACK = false
+//            internal.hourlyRequestACK = false
             console.log("Requesting for Hourly Data:",hourly.url)
 
             HttpRequest
@@ -97,13 +103,29 @@ Item {
             .end(function(err, res) {
                 if(res.ok) {
                     internal.hourlyData = res.body
-                    internal.hourlyRequestACK = true
+//                    internal.hourlyRequestACK = true
+                    errorCheck()
                 }
                 else {
                     console.log(err.message)
                     console.log(err.response)
+                    logic.error()
                 }
             });
+        }
+
+        function errorCheck() {
+            console.log("@@Checking for Errors 'Hourly'")
+            if(internal.hourlyData.hourly) {
+                console.log("Hourly ACK")
+                hourly.parseHourlyData(internal.hourlyData.hourly);
+                hourly.parseHourlyDetailsUnits(internal.hourlyData.hourly_units);
+                logic.requestDailyWeather(hourly.latitude,hourly.longitude,hourly.timezone)
+
+            } else {
+                console.log("Hourly ACK Failed")
+                logic.error()
+            }
         }
 
         function parseHourlyData(data) {
@@ -196,13 +218,30 @@ Item {
                 if(res.ok) {
                     var data = res.body
                     internal.dailyData = data;
+                    errorCheck()
                 }
                 else {
                     console.log(err.message)
                     console.log(err.response)
+                    logic.error()
                 }
             });
         }
+
+        function errorCheck() {
+            console.log("@@Checking for Errors 'Daily'")
+            if(internal.dailyData.daily) {
+                console.log("Daily ACK")
+                daily.parseDailyData(internal.dailyData.daily)
+                logic.allRequestsCompleted();
+
+            } else {
+                console.log("Daily ACK Failed")
+                console.log(data.hourly.time)
+                logic.error()
+            }
+        }
+
 
         function parseDailyData(data) {
             console.log("Parsing Daily Data")
@@ -235,8 +274,13 @@ Item {
 
             console.log(parsedSunriseData)
 
-            parsedSunriseData = daily.convertDailyTime(parsedSunriseData)
-            parsedSunsetData = daily.convertDailyTime(parsedSunsetData)
+            parsedSunriseData = parsedSunriseData.map(value => {
+                                                              return appData.convertDailyTime(value)
+                                                          });
+
+            parsedSunsetData = parsedSunsetData.map(value => {
+                                                              return appData.convertDailyTime(value)
+                                                          });
 
             logic.dailyDate = parsedTimeData;
             logic.dailyWeatherIcon = parsedWeatherCodeData;
@@ -247,26 +291,6 @@ Item {
 
             console.log("Printing Daily Sunrise Time:",parsedSunriseData)
         }
-
-        function convertDailyTime(data) {
-            var dateObjects = data.map(function(datetimeString) {
-                return new Date(datetimeString);
-            });
-
-            var amPmTimeStrings = dateObjects.map(function(dateTimeObject) {
-                dateTimeObject = new Date(dateTimeObject)
-                var hours = dateTimeObject.getHours() ;
-                var AmOrPm = hours >= 12 ? 'PM' : 'AM';
-                hours = (hours % 12) || 12;
-                var minutes = dateTimeObject.getMinutes()
-                var finalTime = hours + ":" + minutes + " " + AmOrPm;
-                console.log(finalTime)
-                return finalTime
-            });
-
-
-            return amPmTimeStrings;
-        }
     }
 
     function requestHourlyWeather(latitude,longitude,timezone) {
@@ -276,8 +300,6 @@ Item {
         hourly.timezone = timezone;
 
         hourly.requestData()
-        hourly.parseHourlyData(internal.hourlyData.hourly);
-        hourly.parseHourlyDetailsUnits(internal.hourlyData.hourly_units);
     }
 
     function requestDailyWeather(latitude,longitude,timezone) {
@@ -286,6 +308,6 @@ Item {
         daily.longitude = longitude;
         daily.timezone = timezone;
         daily.requestData()
-        daily.parseDailyData(internal.dailyData.daily)
+//        daily.parseDailyData(internal.dailyData.daily)
     }
 }

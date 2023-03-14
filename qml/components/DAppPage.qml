@@ -10,4 +10,8 @@ AppPage {
         anchors.fill: parent
         source: "../../assets/appBackground"
     }
+
+    onAppeared: {
+        console.log("The page has appeared")
+    }
 }

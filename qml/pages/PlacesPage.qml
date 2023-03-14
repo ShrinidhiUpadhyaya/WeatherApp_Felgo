@@ -8,22 +8,15 @@ import "../components"
 DAppPage {
     id: page
 
+    Connections {
+        target: placesPageData
 
-    property bool temperatureNeeded: true
-    property bool weatherCodeNeeded: true
-
-    property string temperatureCode: temperatureNeeded ? "temperature_2m," : ""
-    property string weatherCode: weatherCodeNeeded ? "weathercode" : ""
-    property string timezone:  "&timezone="
-
-    property string temperatureUnit: ""
-
-    property string subURL: ""
-
-    property int searchSelectedIndex: -1
-
-    property bool enableDeletion: false
-    property var deleteItems: []
+        onError: {
+            console.log("Error")
+            toastMessage.visible = true
+            toastTimer.start()
+        }
+    }
 
     Item {
         width: parent.width - appThemes.doubleMargin
@@ -45,24 +38,25 @@ DAppPage {
                 height: dp(128)
                 text: model.place
                 value: model.temperature
-                description: "Thunderstorms" //model.weatherDescription
+                description: model.weatherDescription
                 iconText1: model.sunriseTime
                 iconText2: model.sunsetTime
-                deleteModeOn: page.deleteItems[index]
+                icon: model.weatherIcon
+                deleteModeOn: placesPageData.deleteItems[index]
 
                 onClicked: {
-                    if(enableDeletion) {
+                    if(placesPageData.enableDeletion) {
                         console.log("Selected for deletion",index)
-                        page.selectedForDeletion(index)
+                        placesPageData.deletion.selectedForDeletion(index)
                     }
                 }
 
                 onLongPress: {
-                    if(!page.enableDeletion) {
+                    if(!placesPageData.enableDeletion) {
                         console.log("Deletion Enabled")
-                        page.enableDeletion = true
-                        page.enableDeleteItems(index)
-                        console.log(page.deleteItems)
+                        placesPageData.enableDeletion = true
+                        placesPageData.deletion.enableDeleteItems(index)
+                        console.log(placesPageData.deleteItems)
                     }
                 }
             }
@@ -188,10 +182,8 @@ DAppPage {
 
                         onSelected: {
                             console.log("Index Selected:",index)
-                            page.searchSelectedIndex = index
-                            placesPageData.requestHourlyWeather(placesPageData.placeList[index],placesPageData.latitudeList[index],placesPageData.longitudeList[index],placesPageData.timezoneList[index])
-                            placesPageData.requestDailyWeatherData(placesPageData.latitudeList[index],placesPageData.longitudeList[index],placesPageData.timezoneList[index])
-
+                            placesPageData.searchSelectedIndex = index
+                            placesPageData.loadSearchRequest()
                             popup.close()
                         }
                     }
@@ -203,38 +195,31 @@ DAppPage {
             closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
         }
 
-    }
+        Timer {
+            id: toastTimer
 
-    function enableDeleteItems(index) {
-        console.log("Enabled Delete Items:",index)
-        var tempDeleteItems = []
-        for(var i=0;i<placesPageData.cityListModel.count;i++) {
-            tempDeleteItems[i] = i === index ? true : false
-        }
-        page.deleteItems = tempDeleteItems
-
-        console.log(page.deleteItems)
-    }
-
-    function selectedForDeletion(index) {
-        var tempDeleteItems = page.deleteItems
-        tempDeleteItems[index] = !tempDeleteItems[index]
-        disableDeletion(tempDeleteItems)
-        page.deleteItems = tempDeleteItems
-        console.log(page.deleteItems)
-    }
-
-    function disableDeletion(data) {
-        console.log("Disable Deletion",data)
-        var count = 0;
-        for(var i=0;i<data.length;i++) {
-            if(data[i] === false) {
-                count++;
+            running: false
+            interval: 3000
+            onTriggered: {
+                toastMessage.visible = false
             }
         }
 
-        if(count === data.length) {
-            page.enableDeletion = false
+        DToast {
+            id: toastMessage
+
+            width: parent.width / 2
+            height: dp(24)
+            anchors.bottom: parent.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: false
         }
+    }
+
+    Component.onCompleted: {
+        console.log("Places Component Completed@@@@@@@@@@@@@@@@@@@@@@@@@")
+        placesPageData.deletion.initDeleteItems()
+        placesPageData.searchSelectedIndex = 1
+        placesPageData.initialDefaultRequestPlaces("Bamberg")
     }
 }

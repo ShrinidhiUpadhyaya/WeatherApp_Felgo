@@ -8,6 +8,7 @@ Rectangle {
     radius: appThemes.borderRadius
 
     property alias description: descriptionText.text
+    property string icon: ""
     property alias iconText1: iconText1.text
     property alias iconText2: iconText2.text
     property alias text: cityText.text
@@ -98,6 +99,8 @@ Rectangle {
             }
 
             Image {
+                id: mainIcon
+
                 width: dp(84)
                 height: dp(84)
                 anchors {
@@ -105,7 +108,7 @@ Rectangle {
                     left: parent.left
                     leftMargin: dp(114)
                 }
-                source: "../../assets/icons/bigpartlyCloudy"
+                source: appThemes.setIcon(root.icon)
             }
 
 
