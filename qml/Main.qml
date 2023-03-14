@@ -1,6 +1,5 @@
 import Felgo
 import QtQuick
-import "model"
 import "logic"
 import "pages"
 import "components"
@@ -33,6 +32,8 @@ App {
                     var timezone = data[3]
 
                     homePageData.requestHourlyWeather(latitude,longitude,timezone)
+                } else {
+                    homePageData.requestHourlyWeather("49.90","10.90","Europe/Berlin")
                 }
             }
 
@@ -47,8 +48,8 @@ App {
             iconComponent: DNavIcon {
                 anchors.fill: parent
                 selected: navItem2.isSelected
-                selectedIcon: setIcon("cityEnabled")
-                unselectedIcon: setIcon("cityDisabled")
+                selectedIcon: appThemes.setIcon("cityEnabled")
+                unselectedIcon: appThemes.setIcon("cityDisabled")
             }
 
             NavigationStack {
@@ -57,11 +58,11 @@ App {
         }
 
         NavigationItem {
-            id: navItem4
+            id: navItem3
 
             iconComponent: DNavIcon {
                 anchors.fill: parent
-                selected: navItem4.isSelected
+                selected: navItem3.isSelected
                 selectedIcon: setIcon("settingsEnabled")
                 unselectedIcon: setIcon("settingsDisabled")
             }

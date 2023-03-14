@@ -27,9 +27,12 @@ DAppPage {
             id: placesListView
 
             width: parent.width
-            anchors.top: parent.top
-            anchors.bottom: button.top
-            anchors.bottomMargin: appThemes.margin
+            anchors {
+                top: parent.top
+                bottom: button.top
+                bottomMargin: appThemes.margin
+            }
+
             model: placesPageData.cityListModel
             spacing: dp(8)
             clip: true
@@ -90,15 +93,15 @@ DAppPage {
         RoundButton {
             id: deleteButton
 
-            width: page.enableDeletion ? appThemes.circularButtonSize : 0
-            height: page.enableDeletion ? appThemes.circularButtonSize : 0
-            visible: page.enableDeletion
+            width: placesPageData.enableDeletion ? appThemes.circularButtonSize : 0
+            height: placesPageData.enableDeletion ? appThemes.circularButtonSize : 0
             anchors {
                 bottom: parent.bottom
                 bottomMargin: appThemes.margin
                 left: parent.left
                 leftMargin: appThemes.margin
             }
+            visible: placesPageData.enableDeletion
             background: Rectangle {
                 anchors.fill: parent
                 radius: parent.radius
@@ -117,6 +120,8 @@ DAppPage {
             }
 
             onClicked: {
+                placesPageData.enableDeletion = false
+                placesPageData.deletion.deletItems()
             }
         }
 
@@ -160,11 +165,10 @@ DAppPage {
                 AppListView  {
                     id: placesSearchListView
 
-                    model: placesPageData.countryList
-                    backgroundColor: appThemes.transparentColor
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-
+                    model: placesPageData.countryList
+                    backgroundColor: appThemes.transparentColor
 
                     delegate: SimpleRow {
                         text: placesPageData.placeList[index]
@@ -210,15 +214,17 @@ DAppPage {
 
             width: parent.width / 2
             height: dp(24)
-            anchors.bottom: parent.bottom
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors {
+                bottom: parent.bottom
+                horizontalCenter: parent.horizontalCenter
+            }
+
             visible: false
         }
     }
 
     Component.onCompleted: {
         console.log("Places Component Completed@@@@@@@@@@@@@@@@@@@@@@@@@")
-        placesPageData.deletion.initDeleteItems()
         placesPageData.searchSelectedIndex = 1
         placesPageData.initialDefaultRequestPlaces("Bamberg")
     }

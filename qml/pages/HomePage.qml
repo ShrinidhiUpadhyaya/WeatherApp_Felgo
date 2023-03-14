@@ -11,10 +11,6 @@ DAppPage {
     property int currentTimeIndex: 0
     property int currentForecastIndex: 0
 
-    onIsCurrentStackPageChanged: {
-        console.log("Changed")
-    }
-
     Connections {
         target: homePageData
 
@@ -22,11 +18,6 @@ DAppPage {
             toastMessage.visible = true
             toastTimer.start()
         }
-
-        //        onAllRequestsCompleted: {
-        //            console.log("All Request Completed")
-        //            mainLoader.sourceComponent = mainComponent
-        //        }
     }
 
     Item {
@@ -83,7 +74,7 @@ DAppPage {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: false
                                 Layout.preferredHeight: appThemes.bigBannerFontSize + 2
-                                text: homePageData.hourlyTemperatureData[0] + qsTr("°")
+                                text: homePageData.uiDisplayData.hourlyTemperatureData[0] + qsTr("°")
                                 font.pixelSize: appThemes.bigBannerFontSize
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
@@ -122,7 +113,7 @@ DAppPage {
                                                 right: parent.right
                                                 verticalCenter: parent.verticalCenter
                                             }
-                                            text: homePageData.dailyMaxTemperatureData[0] + "°C"
+                                            text: homePageData.uiDisplayData.dailyMaxTemperatureData[0] + "°C"
                                             color: appThemes.secondaryTextColor
                                             font.pixelSize: appThemes.primaryFontSize
                                             font.bold: true
@@ -151,7 +142,7 @@ DAppPage {
                                                 left: parent.left
                                                 verticalCenter: parent.verticalCenter
                                             }
-                                            text: homePageData.dailyMinTemperatureData[0] + "°C"
+                                            text: homePageData.uiDisplayData.dailyMinTemperatureData[0] + "°C"
                                             color: appThemes.secondaryTextColor
                                             font.pixelSize: appThemes.primaryFontSize
                                             font.bold: true
@@ -167,7 +158,7 @@ DAppPage {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: false
                                 Layout.preferredHeight: dp(24)
-                                text: qsTr("Mostly Clear")
+                                text: homePageData.uiDisplayData.currentWeatherDescription
                                 color: appThemes.secondaryTextColor
                                 font.pixelSize: dp(24)
                                 horizontalAlignment: Text.AlignHCenter
@@ -180,7 +171,7 @@ DAppPage {
                                 Layout.fillHeight: false
                                 Layout.preferredHeight: dp(120)
                                 Layout.alignment: Qt.AlignHCenter
-                                source: appThemes.setIcon("bigPartlyCloudy")
+                                source: appThemes.setIcon(homePageData.uiDisplayData.hourlyIconCodeData[0])
                             }
                         }
                     }
@@ -210,7 +201,7 @@ DAppPage {
                                 leftMargin: dp(8)
                                 verticalCenter: sunriseIcon.verticalCenter
                             }
-                            text: homePageData.dailySunriseData[0]
+                            text: homePageData.uiDisplayData.dailySunriseData[0]
                             color: appThemes.secondaryTextColor
                             font.pixelSize: appThemes.primaryFontSize
                             font.bold: true
@@ -234,7 +225,7 @@ DAppPage {
                                 rightMargin: dp(8)
                                 verticalCenter: sunsetIcon.verticalCenter
                             }
-                            text: homePageData.dailySunsetData[0]
+                            text: homePageData.uiDisplayData.dailySunsetData[0]
                             color: appThemes.secondaryTextColor
                             font.pixelSize: appThemes.primaryFontSize
                             font.bold: true
@@ -350,14 +341,14 @@ DAppPage {
                                     anchors.fill: parent
                                     spacing: 0
                                     orientation: ListView.Horizontal
-                                    model: homePageData.hourlyTimeData.length
+                                    model: homePageData.uiDisplayData.hourlyTimeData.length
                                     visible: page.currentForecastIndex === 0
                                     delegate: DTemperatureForecastComponent {
                                         width: temperatureListContainer.width / 4.5
                                         height: temperatureListContainer.height / 1.2
-                                        time: homePageData.hourlyTimeData[index]
-                                        temperature: homePageData.hourlyTemperatureData[index] + "°"
-                                        icon: homePageData.hourlyIconCodeData[index]
+                                        time: homePageData.uiDisplayData.hourlyTimeData[index]
+                                        temperature: homePageData.uiDisplayData.hourlyTemperatureData[index] + "°"
+                                        icon: homePageData.uiDisplayData.hourlyIconCodeData[index]
                                         backgroundColor: page.currentTimeIndex === index ? appThemes.selectedColor : appThemes.unselectedColor
 
                                         onClicked: {
@@ -370,16 +361,16 @@ DAppPage {
                                     anchors.fill: parent
                                     spacing: 0
                                     orientation: ListView.Horizontal
-                                    model: homePageData.dailyDate.length
+                                    model: homePageData.uiDisplayData.dailyDate.length
                                     visible: page.currentForecastIndex === 1
 
                                     delegate: DTemperatureWeeklyForecastComponent {
                                         width: temperatureListContainer.width / 3.5
                                         height: temperatureListContainer.height / 1.2
-                                        time: homePageData.dailyDate[index]
-                                        maxTemperature: homePageData.dailyMaxTemperatureData[index] + qsTr("°")
-                                        minTemperature: homePageData.dailyMinTemperatureData[index] + qsTr("°")
-                                        icon: homePageData.dailyWeatherIcon[index]
+                                        time: homePageData.uiDisplayData.dailyDate[index]
+                                        maxTemperature: homePageData.uiDisplayData.dailyMaxTemperatureData[index] + qsTr("°")
+                                        minTemperature: homePageData.uiDisplayData.dailyMinTemperatureData[index] + qsTr("°")
+                                        icon: homePageData.uiDisplayData.dailyWeatherIcon[index]
                                         backgroundColor: appThemes.unselectedColor
                                     }
                                 }
@@ -421,14 +412,14 @@ DAppPage {
                                 rows: 2
 
                                 Repeater {
-                                    model: homePageData.detailsLabels.length
+                                    model: homePageData.uiDisplayData.detailsLabels.length
 
                                     delegate: DLabelValueText {
                                         Layout.fillWidth: true
                                         Layout.fillHeight: true
 
-                                        label: homePageData.detailsLabels[index]
-                                        value: homePageData.detailsValues[index][currentTimeIndex] + " " + homePageData.detailsValuesUnits[index]
+                                        label: homePageData.uiDisplayData.detailsLabels[index]
+                                        value: homePageData.uiDisplayData.detailsValues[index][currentTimeIndex] + " " + homePageData.uiDisplayData.detailsValuesUnits[index]
                                     }
                                 }
                             }

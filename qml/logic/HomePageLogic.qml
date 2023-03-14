@@ -6,40 +6,10 @@ import Felgo
 Item {
     id: logic
 
+    property alias uiDisplayData: uiDisplayData
+
     property int countOfTemperatureShown: 25
-
-    //Hourly Data
-    property var hourlyTimeData:[];
-    property var hourlyTemperatureData:[];
-    property var hourlyIconCodeData:[];
-
-    //Daily Data
-    property var dailySunriseData: [];
-    property var dailyMaxTemperatureData: [];
-    property var dailySunsetData: [];
-    property var dailyMinTemperatureData: [];
-    property var dailyDate: []
-    property var dailyWeatherIcon: []
-
-    // Features Displayed in Details Section
-    property var detailsLabels: ["Precipitation", "Humidity", "Pressure", "Soil Moisture", "Wind Speed", "Wind Direction"]
-
-    // Details features and units
-    property var detailsValues: [];
-    property var detailsValuesUnits:[];
-
-    // Features Needed
-    property bool temperatureNeeded: true
-    property bool relativeHumidityNeeded: true
-    property bool precipitationNeeded: true
-    property bool weatherCodeNeeded: true
-    property bool surfacePressureNeeded: true
-    property bool windSpeedNeeded: true
-    property bool windDirectionNeeded: true
-    property bool soilMoistureNeeded: true
-
     property int homePageCityIndex: 0
-
 
     signal error()
     signal allRequestsCompleted();
@@ -49,18 +19,20 @@ Item {
 
         property var hourlyData;
         property var dailyData;
-
-//        property bool hourlyRequestACK: false
-
-//        onHourlyRequestACKChanged:  {
-//            console.log("####hourlyRequestACK Changed:",hourlyRequestACK)
-//            if(hourlyRequestACK)
-//                logic.requestDailyWeather(hourly.latitude,hourly.longitude,hourly.timezone)
-//        }
     }
 
     QtObject {
         id: features
+
+        // Features Needed
+        property bool temperatureNeeded: true
+        property bool relativeHumidityNeeded: true
+        property bool precipitationNeeded: true
+        property bool weatherCodeNeeded: true
+        property bool surfacePressureNeeded: true
+        property bool windSpeedNeeded: true
+        property bool windDirectionNeeded: true
+        property bool soilMoistureNeeded: true
 
         readonly property string temperatureCode: temperatureNeeded ? "temperature_2m," : ""
         readonly property string relativeHumidityCode: relativeHumidityNeeded ? "relativehumidity_2m,": ""
@@ -87,15 +59,13 @@ Item {
 
         property string url: hourly.getHourlyRequestURL()
 
-
         function getHourlyRequestURL() {
             features.featuresNeeded()
             return appData.apiURL + hourly.latitude + "&longitude=" + hourly.longitude + "&hourly=" + hourly.subURL
         }
 
         function requestData() {
-//            internal.hourlyRequestACK = false
-            console.log("Requesting for Hourly Data:",hourly.url)
+            console.log("HomePageLogic: Requesting for Hourly Data:",hourly.url)
 
             HttpRequest
             .get(hourly.url)
@@ -103,36 +73,37 @@ Item {
             .end(function(err, res) {
                 if(res.ok) {
                     internal.hourlyData = res.body
-//                    internal.hourlyRequestACK = true
                     errorCheck()
                 }
                 else {
-                    console.log(err.message)
-                    console.log(err.response)
+                    console.log("HomePageLogic: ",err.message)
+                    console.log("HomePageLogic: ",err.response)
                     logic.error()
                 }
             });
         }
 
         function errorCheck() {
-            console.log("@@Checking for Errors 'Hourly'")
+            console.log("HomePageLogic: @@Checking for Errors 'Hourly'")
             if(internal.hourlyData.hourly) {
-                console.log("Hourly ACK")
+                console.log("HomePageLogic: Hourly ACK")
                 hourly.parseHourlyData(internal.hourlyData.hourly);
                 hourly.parseHourlyDetailsUnits(internal.hourlyData.hourly_units);
                 logic.requestDailyWeather(hourly.latitude,hourly.longitude,hourly.timezone)
 
             } else {
-                console.log("Hourly ACK Failed")
+                console.log("HomePageLogic: Hourly ACK Failed")
                 logic.error()
             }
         }
 
         function parseHourlyData(data) {
-            console.log("Parsing Hourly Data",data)
+            console.log("HomePageLogic: Parsing Hourly Data",data)
             var parsedTimeData = data.time;
             var parsedTemperatureData = data.temperature_2m;
             var parsedWeatherIconData = data.weathercode;
+            var parsedWeatherIconDescription = data.weathercode;
+
 
             const index = parsedTimeData.findIndex(item => item > appData.currentTime);
 
@@ -151,8 +122,12 @@ Item {
                 parsedWeatherIconData = parsedWeatherIconData.slice(index-1)
                 parsedWeatherIconData = parsedWeatherIconData.slice(0,logic.countOfTemperatureShown)
                 parsedWeatherIconData = parsedWeatherIconData.map(value => {
-                                                                      return appData.getWeatherIcon(value)
+                                                                      return appData.weatherIcon.getWeatherIcon(value)
                                                                   });
+
+                parsedWeatherIconDescription = parsedWeatherIconDescription.slice(index-1)
+                parsedWeatherIconDescription = parsedWeatherIconDescription[0]
+
 
                 var tempDetailsValues=[]
 
@@ -171,17 +146,19 @@ Item {
                                                                 }
                                                                 )
 
-                logic.hourlyTimeData = parsedTimeData
-                logic.hourlyTemperatureData = parsedTemperatureData
-                logic.hourlyIconCodeData = parsedWeatherIconData
-                logic.detailsValues = tempDetailsValues
+                uiDisplayData.hourlyTimeData = parsedTimeData
+                uiDisplayData.hourlyTemperatureData = parsedTemperatureData
+                uiDisplayData.hourlyIconCodeData = parsedWeatherIconData
+                uiDisplayData.detailsValues = tempDetailsValues
+                uiDisplayData.currentWeatherDescription = appData.weatherIcon.classifyWeatherIconDescription(parsedWeatherIconDescription)
 
-                console.log("Complete Data for the home page:")
+
+                console.log("HomePageLogic: Complete Data for the home page:")
             }
         }
 
         function parseHourlyDetailsUnits(data) {
-            console.log("Parsing details data",data)
+            console.log("HomePageLogic: Parsing details data",data)
 
             var tempDetailsValuesUnits = []
 
@@ -192,7 +169,7 @@ Item {
             tempDetailsValuesUnits[4] = data.windspeed_10m;
             tempDetailsValuesUnits[5] = ""
 
-            logic.detailsValuesUnits = tempDetailsValuesUnits
+            uiDisplayData.detailsValuesUnits = tempDetailsValuesUnits
         }
     }
 
@@ -210,7 +187,7 @@ Item {
         }
 
         function requestData() {
-            console.log("Requesting for daily data:",url)
+            console.log("HomePageLogic: Requesting for daily data:",url)
             HttpRequest
             .get(daily.url)
             .timeout(5000)
@@ -221,30 +198,30 @@ Item {
                     errorCheck()
                 }
                 else {
-                    console.log(err.message)
-                    console.log(err.response)
+                    console.log("HomePageLogic: ", err.message)
+                    console.log("HomePageLogic: ", err.response)
                     logic.error()
                 }
             });
         }
 
         function errorCheck() {
-            console.log("@@Checking for Errors 'Daily'")
+            console.log("HomePageLogic: @@Checking for Errors 'Daily'")
             if(internal.dailyData.daily) {
-                console.log("Daily ACK")
+                console.log("HomePageLogic: Daily ACK")
                 daily.parseDailyData(internal.dailyData.daily)
                 logic.allRequestsCompleted();
 
             } else {
-                console.log("Daily ACK Failed")
-                console.log(data.hourly.time)
+                console.log("HomePageLogic: Daily ACK Failed")
+                console.log("HomePageLogic: ",data.hourly.time)
                 logic.error()
             }
         }
 
 
         function parseDailyData(data) {
-            console.log("Parsing Daily Data")
+            console.log("HomePageLogic: Parsing Daily Data")
 
             var parsedTimeData = data.time;
             var parsedWeatherCodeData = data.weathercode;
@@ -269,10 +246,8 @@ Item {
                                                                     });
 
             parsedWeatherCodeData = parsedWeatherCodeData.map(value => {
-                                                                  return appData.getWeatherIcon(value);
+                                                                  return appData.weatherIcon.getWeatherIcon(value);
                                                               });
-
-            console.log(parsedSunriseData)
 
             parsedSunriseData = parsedSunriseData.map(value => {
                                                               return appData.convertDailyTime(value)
@@ -282,19 +257,46 @@ Item {
                                                               return appData.convertDailyTime(value)
                                                           });
 
-            logic.dailyDate = parsedTimeData;
-            logic.dailyWeatherIcon = parsedWeatherCodeData;
-            logic.dailySunriseData = parsedSunriseData;
-            logic.dailySunsetData = parsedSunsetData;
-            logic.dailyMaxTemperatureData = parsedMaxTemperatureData;
-            logic.dailyMinTemperatureData = parsedMinTemperatureData;
+            uiDisplayData.dailyDate = parsedTimeData;
+            uiDisplayData.dailyWeatherIcon = parsedWeatherCodeData;
+            uiDisplayData.dailySunriseData = parsedSunriseData;
+            uiDisplayData.dailySunsetData = parsedSunsetData;
+            uiDisplayData.dailyMaxTemperatureData = parsedMaxTemperatureData;
+            uiDisplayData.dailyMinTemperatureData = parsedMinTemperatureData;
 
-            console.log("Printing Daily Sunrise Time:",parsedSunriseData)
+            console.log("HomePageLogic: Printing Daily Sunrise Time:",parsedSunriseData)
         }
     }
 
+    QtObject {
+        id: uiDisplayData
+
+        //Hourly Data
+        property var hourlyTimeData:[];
+        property var hourlyTemperatureData:[];
+        property var hourlyIconCodeData:[];
+
+
+        //Daily Data
+        property var dailySunriseData: [];
+        property var dailyMaxTemperatureData: [];
+        property var dailySunsetData: [];
+        property var dailyMinTemperatureData: [];
+        property var dailyDate: []
+        property var dailyWeatherIcon: []
+
+        // Features Displayed in Details Section
+        property var detailsLabels: ["Precipitation", "Humidity", "Pressure", "Soil Moisture", "Wind Speed", "Wind Direction"]
+
+        // Details features and units
+        property var detailsValues: [];
+        property var detailsValuesUnits:[];
+
+        property string currentWeatherDescription: ""
+    }
+
     function requestHourlyWeather(latitude,longitude,timezone) {
-        console.log("Requesting Hourly Weather:",latitude,longitude,timezone)
+        console.log("HomePageLogic: Requesting Hourly Weather:",latitude,longitude,timezone)
         hourly.latitude = latitude;
         hourly.longitude = longitude;
         hourly.timezone = timezone;
@@ -303,11 +305,11 @@ Item {
     }
 
     function requestDailyWeather(latitude,longitude,timezone) {
-        console.log("Requesting Daily Weather:",latitude,longitude,timezone)
+        console.log("HomePageLogic: Requesting Daily Weather:",latitude,longitude,timezone)
         daily.latitude = latitude;
         daily.longitude = longitude;
         daily.timezone = timezone;
+
         daily.requestData()
-//        daily.parseDailyData(internal.dailyData.daily)
     }
 }

@@ -65,7 +65,7 @@ Item {
 
         function requestData() {
             var url = hourly.getHourlyRequestURL()
-            console.log("Requesting Hourly Data URL:",url)
+            console.log("PlacesPageLogic: Requesting Hourly Data URL:",url)
             HttpRequest
             .get(url)
             .timeout(5000)
@@ -73,34 +73,32 @@ Item {
                 if(res.ok) {
                     var data = res.body;
                     internal.hourlyData = data;
-                    console.log(internal.hourlyData)
+                    console.log("PlacesPageLogic: ", internal.hourlyData)
                     hourly.errorCheck(internal.hourlyData);
                 }
                 else {
-                    console.log(err.message)
-                    console.log(err.response)
+                    console.log("PlacesPageLogic: ",err.message)
+                    console.log("PlacesPageLogic: ",err.response)
                     logic.error()
                 }
             });
         }
 
         function errorCheck(data) {
-            console.log("Length of data",data.hourly.time.length)
+            console.log("PlacesPageLogic: Length of data",data.hourly.time.length)
             if(data.hourly.time) {
-                console.log("Victory")
-                console.log(data.hourly.time)
+                console.log("PlacesPageLogic: Hourly ACK")
                 daily.requestData(daily.latitude,daily.longitude,daily.timezone);
                 hourly.parseValueUnits(internal.hourlyData.hourly_units)
                 hourly.parseHourlyData(internal.hourlyData.hourly,hourly.placeName)
             } else {
-                console.log("Lost")
-                console.log(data.hourly.time)
+                console.log("PlacesPageLogic: Hourly Lost")
                 logic.error()
             }
         }
 
         function parseHourlyData(data,placeName) {
-            console.log("Parse Hourly Data")
+            console.log("PlacesPageLogic: ACKParse Hourly Data")
 
             var parsedTimeData = data.time;
             var parsedTemperatureData = data.temperature_2m;
@@ -115,14 +113,14 @@ Item {
                 parsedTemperatureData = parsedTemperatureData[0].toFixed(0) + temperatureUnit
                 parsedWeatherIconDescription = parsedWeatherIconDescription.slice(index-1)
                 parsedWeatherIconDescription = parsedWeatherIconDescription[0]
-                parsedWeatherIconDescription = classifyWeatherIconDescription(parsedWeatherIconDescription)
+                parsedWeatherIconDescription = appData.weatherIcon.classifyWeatherIconDescription(parsedWeatherIconDescription)
 
                 parsedWeatherIconCode = parsedWeatherIconCode.slice(index-1)
                 parsedWeatherIconCode = parsedWeatherIconCode[0]
-                parsedWeatherIconCode = appData.getWeatherIcon(parsedWeatherIconCode)
+                parsedWeatherIconCode = appData.weatherIcon.getWeatherIcon(parsedWeatherIconCode)
 
-                console.log("PlaceName:",placeName)
-                console.log("Temperature:",parsedTemperatureData)
+                console.log("PlacesPageLogic: PlaceName:",placeName)
+                console.log("PlacesPageLogic: Temperature:",parsedTemperatureData)
                 cityListModel.append({"place":placeName,"temperature":parsedTemperatureData,"weatherIcon":parsedWeatherIconCode,"weatherDescription":parsedWeatherIconDescription,"sunriseTime":"","sunsetTime":""})
 
                 var tempPlacesDataStack=placesDataStack;
@@ -149,7 +147,7 @@ Item {
 
         function requestData() {
             var url = daily.getDailyRequestURL()
-            console.log("Request Daily Data",url)
+            console.log("PlacesPageLogic: Request Daily Data",url)
             HttpRequest
             .get(url)
             .timeout(5000)
@@ -160,29 +158,29 @@ Item {
                     daily.errorCheck(internal.dailyData)
                 }
                 else {
-                    console.log(err.message)
-                    console.log(err.response)
+                    console.log("PlacesPageLogic: ", err.message)
+                    console.log("PlacesPageLogic:", err.response)
                 }
             });
         }
 
         function errorCheck(data) {
             if(data.sunrise) {
-                console.log("Victory")
+                console.log("PlacesPageLogic: Daily ACK")
                 daily.parseDailyWeatherData(internal.dailyData);
             } else {
-                console.log("Lost")
+                console.log("PlacesPageLogic: Daily ACK Failed")
             }
         }
 
         function parseDailyWeatherData(data) {
-            console.log("Parsing Daily Weather Data",data)
+            console.log("PlacesPageLogic: Parsing Daily Weather Data",data)
 
             var sunriseTime = appData.convertDailyTime(data.sunrise[0])
             var sunsetTime = appData.convertDailyTime(data.sunset[0])
 
-            console.log("Sunrise Time:",sunriseTime)
-            console.log("Sunset Time:",sunsetTime)
+            console.log("PlacesPageLogic: Sunrise Time:", sunriseTime)
+            console.log("PlacesPageLogic: Sunset Time:", sunsetTime)
 
             cityListModel.setProperty(cityListModel.count-1,"sunriseTime",sunriseTime)
             cityListModel.setProperty(cityListModel.count-1,"sunsetTime",sunsetTime)
@@ -192,9 +190,7 @@ Item {
     QtObject {
         id: deletion
 
-        function enableDeleteItems(index) {
-            console.log("Enabled Delete Items:",index)
-
+        function initDeleteItemsArray() {
             var tempDeleteItems=[]
 
             for(var i=0;i<cityListModel.count;i++) {
@@ -202,8 +198,22 @@ Item {
             }
 
             logic.deleteItems = tempDeleteItems
+        }
 
-            console.log(logic.deleteItems)
+        function enableDeleteItems(index) {
+            console.log("PlacesPageLogic: Enabled Delete Items:",index)
+
+            var tempDeleteItems=[]
+
+            for(var i=0;i<cityListModel.count;i++) {
+                tempDeleteItems[i] = false
+            }
+
+            tempDeleteItems[index] = true
+
+            logic.deleteItems = tempDeleteItems
+
+            console.log("PlacesPageLogic: ", logic.deleteItems)
         }
 
         function selectedForDeletion(index) {
@@ -211,11 +221,11 @@ Item {
             tempDeleteItems[index] = !tempDeleteItems[index]
             disableDeletion(tempDeleteItems)
             logic.deleteItems = tempDeleteItems
-            console.log(logic.deleteItems)
+            console.log("PlacesPageLogic:", logic.deleteItems)
         }
 
         function disableDeletion(data) {
-            console.log("Disable Deletion",data)
+            console.log("PlacesPageLogic: Disable Deletion",data)
             var count = 0;
             for(var i=0;i<data.length;i++) {
                 if(data[i] === false) {
@@ -228,19 +238,40 @@ Item {
             }
         }
 
-        function initDeleteItems() {
+        function deletItems() {
+            console.log("Deleting items",logic.deleteItems)
+            var indexesToRemove=[];
+            for(var i=0;i<cityListModel.count;i++) {
+                if(logic.deleteItems[i] === true) {
+                    console.log("Index deleted:",i)
+                    cityListModel.remove(i)
+                    initDeleteItemsArray();
+                    indexesToRemove[indexesToRemove.length] = i
+                    console.log(placesDataStack)
+                }
+            }
 
+            indexesToRemove.sort(function(a, b) {
+              return b - a;
+            });
+
+
+            for (var i = 0; i < indexesToRemove.length; i++) {
+              placesDataStack.splice(indexesToRemove[i], 1);
+            }
+
+            console.log(placesDataStack)
         }
     }
 
     function sendRequest(placeName,latitude,longitude,timezone) {
-        console.log("Sending Request")
+        console.log("PlacesPageLogic: Sending Request")
         logic.requestHourlyWeather(placeName,latitude,longitude,timezone)
         logic.requestDailyWeatherData(latitude,longitude,timezone)
     }
 
     function initialDefaultRequestPlaces(text) {
-        console.log("Requesting Places")
+        console.log("PlacesPageLogic: Requesting Places")
         HttpRequest
         .get(appData.geocodeURL+text)
         .timeout(5000)
@@ -270,15 +301,15 @@ Item {
                 placesPageData.loadSearchRequest()
             }
             else {
-                console.log(err.message)
-                console.log(err.response)
+                console.log("PlacesPageLogic: ", err.message)
+                console.log("PlacesPageLogic: ", err.response)
             }
         });
     }
 
 
     function requestPlaces(text) {
-        console.log("Requesting Places")
+        console.log("PlacesPageLogic: Requesting Places")
         HttpRequest
         .get(appData.geocodeURL+text)
         .timeout(5000)
@@ -306,14 +337,14 @@ Item {
                 logic.timezoneList = timezone
             }
             else {
-                console.log(err.message)
-                console.log(err.response)
+                console.log("PlacesPageLogic:", err.message)
+                console.log("PlacesPageLogic:", err.response)
             }
         });
     }
 
     function requestHourlyWeather(placeName,placeLatitude,placeLongitude,placeTimeZone) {
-        console.log("Request Hourly Weather",placeName,placeLatitude,placeLongitude,placeTimeZone)
+        console.log("PlacesPageLogic: Request Hourly Weather",placeName,placeLatitude,placeLongitude,placeTimeZone)
 
         hourly.placeName = placeName
         hourly.latitude = placeLatitude
@@ -324,7 +355,7 @@ Item {
     }
 
     function requestDailyWeatherData(placeLatitude,placeLongitude,placeTimeZone) {
-        console.log("Request Daily Weather",placeLatitude,placeLatitude,placeTimeZone)
+        console.log("PlacesPageLogic: Request Daily Weather",placeLatitude,placeLatitude,placeTimeZone)
 
         daily.latitude = placeLatitude
         daily.longitude = placeLongitude
@@ -332,32 +363,14 @@ Item {
     }
 
     function clearSearchData() {
-        console.log("Clearing Search Data")
+        console.log("PlacesPageLogic: Clearing Search Data")
         longitudeList =[]
         latitudeList = []
         countryList = []
         placeList = []
     }
 
-    function classifyWeatherIconDescription(value) {
-        if (appData.sunnyValues.includes(value)) {
-            return "Sunny"
-        } else if (appData.partlyCloudyValues.includes(value)) {
-            return "Partly Cloudy"
-        }
-        else if (appData.rainyValues.includes(value)) {
-            return "Rainy"
-        }
-        else if (appData.thunderStormValues.includes(value)) {
-            return "Thunderstorms"
-        }
-        else if (appData.fogValues.includes(value)) {
-            return "Fog"
-        }
-        else if (appData.snowValues.includes(value)) {
-            return "Snow"
-        }
-    }
+
 
     function loadSearchRequest() {
         if(placesPageData.placeList.length > 0) {

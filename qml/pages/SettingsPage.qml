@@ -14,17 +14,17 @@ DAppPage {
         id: settingsListModel
 
         ListElement {
-            text: "HomePage"
+            text: qsTr("HomePage")
             icon: "homeWhiteIcon"
         }
 
         ListElement {
-            text: "FAQ"
+            text: qsTr("FAQ")
             icon: "faqIcon"
         }
 
         ListElement {
-            text: "Credits"
+            text: qsTr("Credits")
             icon: "creditsIcon"
         }
     }
@@ -47,12 +47,6 @@ DAppPage {
                     width: parent.width
                     height: dp(48)
 
-                    Rectangle {
-                        anchors.fill: parent
-                        color:"transparent"
-                        border.color: "red"
-                    }
-
                     icon: model.icon
                     text: model.text
 
@@ -64,9 +58,9 @@ DAppPage {
         }
 
         Item {
+            Layout.fillWidth: true
             Layout.fillHeight: false
             Layout.preferredHeight: parent.height * 0.25
-            Layout.fillWidth: true
 
             ColumnLayout {
                 width: parent.width
@@ -75,15 +69,15 @@ DAppPage {
                 DText {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                    text: "Made By Shrinidhi Upadhyaya"
+                    text: qsTr("Made By Shrinidhi Upadhyaya")
                     font.pixelSize: dp(12)
                     horizontalAlignment: Text.AlignHCenter
                 }
 
                 DText {
-                    Layout.fillHeight: true
                     Layout.fillWidth: true
-                    text: "V1.0"
+                    Layout.fillHeight: true
+                    text: qsTr("V1.0")
                     font.pixelSize: dp(12)
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -91,12 +85,10 @@ DAppPage {
         }
     }
 
-
-
     function initPages() {
-        settingsPages[0] = Qt.createComponent("CitiesSettingsPage.qml");
-        settingsPages[1] = Qt.createComponent("FAQSettingsPage.qml");
-        settingsPages[2] = Qt.createComponent("CreditsSettingsPage.qml");
+        page.settingsPages[0] = Qt.createComponent("CitiesSettingsPage.qml");
+        page.settingsPages[1] = Qt.createComponent("FAQSettingsPage.qml");
+        page.settingsPages[2] = Qt.createComponent("CreditsSettingsPage.qml");
     }
 
     Component.onCompleted: {

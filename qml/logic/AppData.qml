@@ -7,6 +7,8 @@ import Felgo
 Item {
     id: logic
 
+    property alias weatherIcon: weatherIcon
+
     readonly property string apiURL: "https://api.open-meteo.com/v1/dwd-icon?latitude="
     readonly property string geocodeURL: "https://geocoding-api.open-meteo.com/v1/search?name="
 
@@ -66,23 +68,49 @@ Item {
         return finalTime
     }
 
-    function getWeatherIcon(value) {
-        if (sunnyValues.includes(value)) {
-            return "sunny"
-        } else if (partlyCloudyValues.includes(value)) {
-            return "partlyCloudy"
+    QtObject {
+        id: weatherIcon
+
+        function getWeatherIcon(value) {
+            if (sunnyValues.includes(value)) {
+                return "sunny"
+            } else if (partlyCloudyValues.includes(value)) {
+                return "partlyCloudy"
+            }
+            else if (rainyValues.includes(value)) {
+                return "rainy"
+            }
+            else if (thunderStormValues.includes(value)) {
+                return "thunderstorms"
+            }
+            else if (fogValues.includes(value)) {
+                return "fog"
+            }
+            else if (snowValues.includes(value)) {
+                return "snow"
+            }
         }
-        else if (rainyValues.includes(value)) {
-            return "rainy"
-        }
-        else if (thunderStormValues.includes(value)) {
-            return "thunderstorms"
-        }
-        else if (fogValues.includes(value)) {
-            return "fog"
-        }
-        else if (snowValues.includes(value)) {
-            return "snow"
+
+        function classifyWeatherIconDescription(value) {
+            if (appData.sunnyValues.includes(value)) {
+                return "Sunny"
+            } else if (appData.partlyCloudyValues.includes(value)) {
+                return "Partly Cloudy"
+            }
+            else if (appData.rainyValues.includes(value)) {
+                return "Rainy"
+            }
+            else if (appData.thunderStormValues.includes(value)) {
+                return "Thunderstorms"
+            }
+            else if (appData.fogValues.includes(value)) {
+                return "Fog"
+            }
+            else if (appData.snowValues.includes(value)) {
+                return "Snow"
+            }
         }
     }
+
+
 }
