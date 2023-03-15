@@ -68,7 +68,7 @@ Item {
         }
 
         function requestData() {
-            console.log("HomePageLogic: Requesting for Hourly Data:",hourly.url)
+            console.log("@@HomePageLogic: Requesting for Hourly Data:",hourly.url)
 
             HttpRequest
             .get(hourly.url)
@@ -79,23 +79,23 @@ Item {
                     errorCheck()
                 }
                 else {
-                    console.log("HomePageLogic: ",err.message)
-                    console.log("HomePageLogic: ",err.response)
+                    console.log("@@HomePageLogic: ",err.message)
+                    console.log("@@HomePageLogic: ",err.response)
                     logic.error()
                 }
             });
         }
 
         function errorCheck() {
-            console.log("HomePageLogic: @@Checking for Errors 'Hourly'")
+            console.log("@@HomePageLogic: Checking for Errors 'Hourly'")
             if(internal.hourlyData.hourly) {
-                console.log("HomePageLogic: Hourly ACK")
+                console.log("@@HomePageLogic: Hourly ACK")
                 hourly.parseHourlyData(internal.hourlyData.hourly);
                 hourly.parseHourlyDetailsUnits(internal.hourlyData.hourly_units);
                 logic.requestDailyWeather(hourly.latitude,hourly.longitude,hourly.timezone)
 
             } else {
-                console.log("HomePageLogic: Hourly ACK Failed")
+                console.log("@@HomePageLogic: Hourly ACK Failed")
                 logic.error()
             }
         }
@@ -154,11 +154,7 @@ Item {
                 uiDisplayData.hourlyIconCodeData = parsedWeatherIconData
                 uiDisplayData.detailsValues = tempDetailsValues
 
-                console.log("@@@@@@@@@@@@@@@@@@",uiDisplayData.hourlyIconCodeData[0])
                 uiDisplayData.currentWeatherDescription = appData.weatherIcon.classifyWeatherIconDescription(parsedWeatherIconDescription)
-
-
-                console.log("HomePageLogic: Complete Data for the home page:")
             }
         }
 
@@ -211,19 +207,18 @@ Item {
         }
 
         function errorCheck() {
-            console.log("HomePageLogic: @@Checking for Errors 'Daily'")
+            console.log("@@HomePageLogic: Checking for Errors 'Daily'")
             if(internal.dailyData.daily) {
-                console.log("HomePageLogic: Daily ACK")
+                console.log("@@HomePageLogic: Daily ACK")
                 daily.parseDailyData(internal.dailyData.daily)
                 logic.allRequestsCompleted();
 
             } else {
-                console.log("HomePageLogic: Daily ACK Failed")
-                console.log("HomePageLogic: ",data.hourly.time)
+                console.log("@@HomePageLogic: Daily ACK Failed")
+                console.log("@@HomePageLogic: ",data.hourly.time)
                 logic.error()
             }
         }
-
 
         function parseDailyData(data) {
             console.log("HomePageLogic: Parsing Daily Data")
@@ -237,7 +232,7 @@ Item {
 
             parsedTimeData = parsedTimeData.map(value => {
                                                     var date = new Date(value);
-                                                    var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                                                    var days = appData.daysNames;
                                                     var dayName = days[date.getDay()];
                                                     return dayName;
                                                 });

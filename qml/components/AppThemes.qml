@@ -28,6 +28,9 @@ Item {
     readonly property real iconSize: dp(32)
     readonly property real margin: dp(16)
     readonly property real primaryFontSize: dp(16)
+    readonly property real secondaryFontSize: dp(12)
+    readonly property real halfMargin: dp(8)
+    readonly property real bigFontSize: dp(24)
 
     function setIcon(path) {
         return "../../assets/icons/" + path

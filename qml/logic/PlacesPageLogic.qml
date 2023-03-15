@@ -20,9 +20,8 @@ Item {
     property var longitudeList:[]
     property var latitudeList:[]
     property var placeList: []
-    property var timezoneList: []
-
     property var placesDataStack: []
+    property var timezoneList: []
 
     signal error()
 
@@ -46,7 +45,7 @@ Item {
         property string timezone: ""
 
         property string temperatureCode: hourly.temperatureNeeded ? "temperature_2m," : ""
-        property string timezoneCode:  "&timezone=" + hourly.timezone
+        property string timezoneCode: "&timezone=" + hourly.timezone
         property string weatherCode: hourly.weatherCodeNeeded ? "weathercode," : ""
         property string subURL: ""
 
@@ -85,14 +84,14 @@ Item {
         }
 
         function errorCheck(data) {
-            console.log("PlacesPageLogic: Length of data",data.hourly.time.length)
+            console.log("@@PlacesPageLogic: Length of data",data.hourly.time.length)
             if(data.hourly.time) {
-                console.log("PlacesPageLogic: Hourly ACK")
+                console.log("@@PlacesPageLogic: Hourly ACK")
                 daily.requestData(daily.latitude,daily.longitude,daily.timezone);
                 hourly.parseValueUnits(internal.hourlyData.hourly_units)
                 hourly.parseHourlyData(internal.hourlyData.hourly,hourly.placeName)
             } else {
-                console.log("PlacesPageLogic: Hourly Lost")
+                console.log("@@PlacesPageLogic: Hourly Failed")
                 logic.error()
             }
         }
@@ -103,8 +102,7 @@ Item {
             var parsedTimeData = data.time;
             var parsedTemperatureData = data.temperature_2m;
             var parsedWeatherIconDescription = data.weathercode;
-            var parsedWeatherIconCode = data.weathercode;
-
+            var parsedWeatherIconCode;
 
             const index = parsedTimeData.findIndex(item => item > appData.currentTime); // find the index of the first item greater than current time
 
@@ -113,15 +111,9 @@ Item {
                 parsedTemperatureData = parsedTemperatureData[0].toFixed(0) + temperatureUnit
                 parsedWeatherIconDescription = parsedWeatherIconDescription.slice(index-1)
                 parsedWeatherIconDescription = parsedWeatherIconDescription[0]
+                parsedWeatherIconCode = appData.weatherIcon.getWeatherIcon(parsedWeatherIconDescription)
                 parsedWeatherIconDescription = appData.weatherIcon.classifyWeatherIconDescription(parsedWeatherIconDescription)
 
-                parsedWeatherIconCode = parsedWeatherIconCode.slice(index-1)
-                parsedWeatherIconCode = parsedWeatherIconCode[0]
-                console.log("PlacesPageLogic: Printing the parsed weather icon code1:",parsedWeatherIconCode)
-
-                parsedWeatherIconCode = appData.weatherIcon.getWeatherIcon(parsedWeatherIconCode)
-
-                console.log("PlacesPageLogic: Printing the parsed weather icon code2:",parsedWeatherIconCode)
                 cityListModel.append({"place":placeName,"temperature":parsedTemperatureData,"weatherIcon":parsedWeatherIconCode,"weatherDescription":parsedWeatherIconDescription,"sunriseTime":"","sunsetTime":""})
 
                 var tempPlacesDataStack=placesDataStack;
@@ -160,17 +152,17 @@ Item {
                 }
                 else {
                     console.log("PlacesPageLogic: ", err.message)
-                    console.log("PlacesPageLogic:", err.response)
+                    console.log("PlacesPageLogic: ", err.response)
                 }
             });
         }
 
         function errorCheck(data) {
             if(data.sunrise) {
-                console.log("PlacesPageLogic: Daily ACK")
+                console.log("@@PlacesPageLogic: Daily ACK")
                 daily.parseDailyWeatherData(internal.dailyData);
             } else {
-                console.log("PlacesPageLogic: Daily ACK Failed")
+                console.log("@@PlacesPageLogic: Daily ACK Failed")
             }
         }
 
@@ -179,9 +171,6 @@ Item {
 
             var sunriseTime = appData.convertDailyTime(data.sunrise[0])
             var sunsetTime = appData.convertDailyTime(data.sunset[0])
-
-            console.log("PlacesPageLogic: Sunrise Time:", sunriseTime)
-            console.log("PlacesPageLogic: Sunset Time:", sunsetTime)
 
             cityListModel.setProperty(cityListModel.count-1,"sunriseTime",sunriseTime)
             cityListModel.setProperty(cityListModel.count-1,"sunsetTime",sunsetTime)
@@ -196,8 +185,8 @@ Item {
         function initDeleteItemsArray() {
             var tempDeleteItems=[]
 
-            for(var i=0;i<cityListModel.count;i++) {
-                tempDeleteItems[i] = false
+            for(var index=0;index<cityListModel.count;index++) {
+                tempDeleteItems[index] = false
             }
 
             logic.deleteItems = tempDeleteItems
@@ -213,10 +202,7 @@ Item {
             }
 
             tempDeleteItems[index] = true
-
             logic.deleteItems = tempDeleteItems
-
-            console.log("PlacesPageLogic: ", logic.deleteItems)
         }
 
         function selectedForDeletion(index) {
@@ -224,14 +210,14 @@ Item {
             tempDeleteItems[index] = !tempDeleteItems[index]
             disableDeletion(tempDeleteItems)
             logic.deleteItems = tempDeleteItems
-            console.log("PlacesPageLogic:", logic.deleteItems)
+            console.log("PlacesPageLogic: selectedForDeletion ", logic.deleteItems)
         }
 
         function disableDeletion(data) {
             console.log("PlacesPageLogic: Disable Deletion",data)
             var count = 0;
-            for(var i=0;i<data.length;i++) {
-                if(data[i] === false) {
+            for(var index=0;index<data.length;index++) {
+                if(data[index] === false) {
                     count++;
                 }
             }
@@ -241,15 +227,15 @@ Item {
             }
         }
 
-        function deletItems() {
+        function deleteItems() {
             console.log("Deleting items",logic.deleteItems)
             var indexesToRemove=[];
-            for(var i=0;i<cityListModel.count;i++) {
-                if(logic.deleteItems[i] === true) {
-                    console.log("Index deleted:",i)
-                    cityListModel.remove(i)
+            for(var index=0;index<cityListModel.count;index++) {
+                if(logic.deleteItems[index] === true) {
+                    console.log("Index deleted:",index)
+                    cityListModel.remove(index)
                     initDeleteItemsArray();
-                    indexesToRemove[indexesToRemove.length] = i
+                    indexesToRemove[indexesToRemove.length] = index
                     console.log(placesDataStack)
                 }
             }
@@ -259,8 +245,8 @@ Item {
             });
 
 
-            for (var i = 0; i < indexesToRemove.length; i++) {
-              placesDataStack.splice(indexesToRemove[i], 1);
+            for (var removeIndex = 0; removeIndex < indexesToRemove.length; removeIndex++) {
+              placesDataStack.splice(indexesToRemove[removeIndex], 1);
             }
 
             console.log(placesDataStack)
@@ -310,7 +296,6 @@ Item {
         });
     }
 
-
     function requestPlaces(text) {
         console.log("PlacesPageLogic: Requesting Places")
         HttpRequest
@@ -347,7 +332,7 @@ Item {
     }
 
     function requestHourlyWeather(placeName,placeLatitude,placeLongitude,placeTimeZone) {
-        console.log("PlacesPageLogic: Request Hourly Weather",placeName,placeLatitude,placeLongitude,placeTimeZone)
+        console.log("PlacesPageLogic: Request Hourly Weather:",placeName,placeLatitude,placeLongitude,placeTimeZone)
 
         hourly.placeName = placeName
         hourly.latitude = placeLatitude
@@ -358,7 +343,7 @@ Item {
     }
 
     function requestDailyWeatherData(placeLatitude,placeLongitude,placeTimeZone) {
-        console.log("PlacesPageLogic: Request Daily Weather",placeLatitude,placeLatitude,placeTimeZone)
+        console.log("PlacesPageLogic: Request Daily Weather:",placeLatitude,placeLatitude,placeTimeZone)
 
         daily.latitude = placeLatitude
         daily.longitude = placeLongitude

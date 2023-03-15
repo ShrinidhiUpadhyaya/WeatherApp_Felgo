@@ -160,7 +160,7 @@ DAppPage {
                                 Layout.preferredHeight: dp(24)
                                 text: homePageData.uiDisplayData.currentWeatherDescription
                                 color: appThemes.secondaryTextColor
-                                font.pixelSize: dp(24)
+                                font.pixelSize: appThemes.bigFontSize
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
@@ -190,7 +190,7 @@ DAppPage {
                                 bottom: curve.top
                                 bottomMargin: dp(4)
                                 left: parent.left
-                                leftMargin: dp(8)
+                                leftMargin: appThemes.halfMargin
                             }
                             source: appThemes.setIcon("sunrise")
                         }
@@ -198,7 +198,7 @@ DAppPage {
                         DText {
                             anchors {
                                 left: sunriseIcon.right
-                                leftMargin: dp(8)
+                                leftMargin: appThemes.halfMargin
                                 verticalCenter: sunriseIcon.verticalCenter
                             }
                             text: homePageData.uiDisplayData.dailySunriseData[0]
@@ -222,7 +222,7 @@ DAppPage {
                         DText {
                             anchors {
                                 right: sunsetIcon.left
-                                rightMargin: dp(8)
+                                rightMargin: appThemes.halfMargin
                                 verticalCenter: sunsetIcon.verticalCenter
                             }
                             text: homePageData.uiDisplayData.dailySunsetData[0]
@@ -238,9 +238,9 @@ DAppPage {
                             height: appThemes.iconSize
                             anchors {
                                 bottom: curve.bottom
-                                bottomMargin: dp(8)
+                                bottomMargin: appThemes.halfMargin
                                 right: parent.right
-                                rightMargin: dp(8)
+                                rightMargin: appThemes.halfMargin
                             }
                             source: appThemes.setIcon("sunset")
                         }
@@ -338,6 +338,8 @@ DAppPage {
                                 Layout.fillHeight: true
 
                                 ListView {
+                                    id: hourlyForecastListView
+
                                     anchors.fill: parent
                                     spacing: 0
                                     orientation: ListView.Horizontal
@@ -358,6 +360,8 @@ DAppPage {
                                 }
 
                                 ListView {
+                                    id: weeklyForecastListView
+
                                     anchors.fill: parent
                                     spacing: 0
                                     orientation: ListView.Horizontal
@@ -365,7 +369,7 @@ DAppPage {
                                     visible: page.currentForecastIndex === 1
 
                                     delegate: DTemperatureWeeklyForecastComponent {
-                                        width: temperatureListContainer.width / 3.5
+                                        width: temperatureListContainer.width / 3
                                         height: temperatureListContainer.height / 1.2
                                         time: homePageData.uiDisplayData.dailyDate[index]
                                         maxTemperature: homePageData.uiDisplayData.dailyMaxTemperatureData[index] + qsTr("°")

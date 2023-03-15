@@ -35,6 +35,9 @@ Item {
     // Directions Names
     property var directionsNames: ['North', 'Northeast', 'East', 'SouthEast', 'South', 'SouthWest', 'West', 'Northwest']
 
+    // Days Names
+    property var daysNames: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
     function convertTime(data) {
         console.log("Convert Time")
         var dateObjects = data.map(function(datetimeString) {
@@ -54,7 +57,7 @@ Item {
     }
 
     function convertDailyTime(data) {
-        console.log("Convert Time")
+        console.log("Convert Daily Time")
 
         var dateObjects = new Date(data);
         var hours = dateObjects.getHours() ;

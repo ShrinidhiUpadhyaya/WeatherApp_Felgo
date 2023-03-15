@@ -71,7 +71,7 @@ DAppPage {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     text: qsTr("Made By Shrinidhi Upadhyaya")
-                    font.pixelSize: dp(12)
+                    font.pixelSize: apppThemes.secondaryFontSize
                     horizontalAlignment: Text.AlignHCenter
                 }
 
@@ -79,7 +79,7 @@ DAppPage {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     text: qsTr("V1.0")
-                    font.pixelSize: dp(12)
+                    font.pixelSize: apppThemes.secondaryFontSize
                     horizontalAlignment: Text.AlignHCenter
                 }
             }

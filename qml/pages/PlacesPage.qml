@@ -34,7 +34,7 @@ DAppPage {
             }
 
             model: placesPageData.cityListModel
-            spacing: dp(8)
+            spacing: appThemes.halfMargin
             clip: true
             delegate: DPlaceListComponent {
                 width: parent.width
@@ -45,10 +45,10 @@ DAppPage {
                 iconText1: model.sunriseTime
                 iconText2: model.sunsetTime
                 icon: "/bigIcons/" + model.weatherIcon
-                deleteModeOn: placesPageData.deleteItems[index]
+                deleteModeOn: index>0 ? placesPageData.deleteItems[index] : false
 
                 onClicked: {
-                    if(placesPageData.enableDeletion) {
+                    if(placesPageData.enableDeletion && index > 0) {
                         console.log("Selected for deletion",index)
                         placesPageData.deletion.selectedForDeletion(index)
                     }
@@ -111,7 +111,7 @@ DAppPage {
 
             onClicked: {
                 placesPageData.enableDeletion = false
-                placesPageData.deletion.deletItems()
+                placesPageData.deletion.deleteItems()
             }
         }
 
@@ -123,7 +123,7 @@ DAppPage {
             anchors.centerIn: parent
 
             background: Rectangle {
-                radius: dp(16)
+                radius: appThemes.borderRadius
                 color: "#124951"
             }
 
@@ -176,6 +176,7 @@ DAppPage {
 
                         onSelected: {
                             console.log("Index Selected:",index)
+                            searchBar.text = ""
                             placesPageData.searchSelectedIndex = index
                             placesPageData.loadSearchRequest()
                             popup.close()

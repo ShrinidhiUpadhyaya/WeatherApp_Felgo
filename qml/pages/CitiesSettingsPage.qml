@@ -34,7 +34,7 @@ DAppPage {
                         anchors.verticalCenter: parent.verticalCenter
                         text: qsTr("City")
                         font.bold: true
-                        font.pixelSize: dp(16)
+                        font.pixelSize: appThemes.primaryFontSize
                         verticalAlignment: Text.AlignVCenter
                     }
                 }
@@ -60,7 +60,7 @@ DAppPage {
         anchors.centerIn: parent
 
         background: Rectangle {
-            radius: dp(16)
+            radius: appThemes.borderRadius
             color: appThemes.cardColor
         }
 
