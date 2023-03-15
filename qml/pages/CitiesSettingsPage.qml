@@ -8,10 +8,9 @@ import "../components"
 DAppPage {
     id: page
 
-    title: "Cities"
+    title: qsTr("Cities")
 
     navigationBarHidden: false
-
 
     Item {
         width: parent.width - appThemes.doubleMargin
@@ -28,21 +27,21 @@ DAppPage {
                 spacing: appThemes.doubleMargin
 
                 Item {
-                    Layout.fillHeight: true
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
 
                     DText {
-                        text: "City"
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: qsTr("City")
                         font.bold: true
                         font.pixelSize: dp(16)
                         verticalAlignment: Text.AlignVCenter
-                        anchors.verticalCenter: parent.verticalCenter
                     }
                 }
 
                 DSelectionBox {
-                    Layout.fillHeight: true
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     text: placesPageData.cityListModel.get(homePageData.homePageCityIndex).place
 
                     onClicked: {
@@ -62,15 +61,15 @@ DAppPage {
 
         background: Rectangle {
             radius: dp(16)
-            color: "#124951"
+            color: appThemes.cardColor
         }
 
         AppListView  {
             id: placesSearchListView
 
+            anchors.fill: parent
             model: placesPageData.cityListModel
             backgroundColor: appThemes.transparentColor
-            anchors.fill: parent
 
             delegate: DRadioSelectionBox {
                 width: parent.width

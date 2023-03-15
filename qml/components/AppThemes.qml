@@ -5,6 +5,8 @@ Item {
     id: root
 
     readonly property string buttonColor: "#0E5D5A"
+    readonly property string deleteButtonColor: "#F34542"
+    readonly property string deleteButtonPressedColor: "#ED5E68"
     readonly property string cardColor: "#124951"
     readonly property string dividerLineColor: "#1B8B96"
     readonly property string frameBorderColor: "#408F8D"

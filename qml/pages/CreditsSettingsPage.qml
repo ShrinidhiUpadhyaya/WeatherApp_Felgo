@@ -6,7 +6,7 @@ import Felgo
 import "../components"
 
 DAppPage {
-    title: "Credits"
+    title: qsTr("Credits")
 
     navigationBarHidden: false
 
@@ -16,7 +16,7 @@ DAppPage {
         anchors.centerIn: parent
 
         DText {
-            text: "API Used: " + '<html><style type="text/css"></style><a href="https://open-meteo.com/">OpenMateo</a></html>'
+            text: qsTr("API Used: ") + '<html><style type="text/css"></style><a href="https://open-meteo.com/">OpenMateo</a></html>'
             font.pixelSize: appThemes.primaryFontSize
 
             onLinkActivated: Qt.openUrlExternally(link)

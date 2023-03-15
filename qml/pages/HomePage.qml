@@ -113,7 +113,7 @@ DAppPage {
                                                 right: parent.right
                                                 verticalCenter: parent.verticalCenter
                                             }
-                                            text: homePageData.uiDisplayData.dailyMaxTemperatureData[0] + "°C"
+                                            text: homePageData.uiDisplayData.dailyMaxTemperatureData[0] + qsTr("°C")
                                             color: appThemes.secondaryTextColor
                                             font.pixelSize: appThemes.primaryFontSize
                                             font.bold: true
@@ -142,7 +142,7 @@ DAppPage {
                                                 left: parent.left
                                                 verticalCenter: parent.verticalCenter
                                             }
-                                            text: homePageData.uiDisplayData.dailyMinTemperatureData[0] + "°C"
+                                            text: homePageData.uiDisplayData.dailyMinTemperatureData[0] + qsTr("°C")
                                             color: appThemes.secondaryTextColor
                                             font.pixelSize: appThemes.primaryFontSize
                                             font.bold: true
@@ -171,7 +171,7 @@ DAppPage {
                                 Layout.fillHeight: false
                                 Layout.preferredHeight: dp(120)
                                 Layout.alignment: Qt.AlignHCenter
-                                source: appThemes.setIcon(homePageData.uiDisplayData.hourlyIconCodeData[0])
+                                source: appThemes.setIcon("/bigIcons/" + homePageData.uiDisplayData.hourlyIconCodeData[0])
                             }
                         }
                     }
@@ -289,11 +289,11 @@ DAppPage {
                                         Layout.fillHeight: true
 
                                         DText {
+                                            anchors.centerIn: parent
                                             text: qsTr("Weekly Forecast")
                                             font.pixelSize: appThemes.primaryFontSize
                                             font.bold: page.currentForecastIndex == 1
                                             color: page.currentForecastIndex === 1 ? appThemes.primaryTextColor : appThemes.secondaryTextColor
-                                            anchors.centerIn: parent
                                         }
 
                                         MouseArea {
@@ -347,7 +347,7 @@ DAppPage {
                                         width: temperatureListContainer.width / 4.5
                                         height: temperatureListContainer.height / 1.2
                                         time: homePageData.uiDisplayData.hourlyTimeData[index]
-                                        temperature: homePageData.uiDisplayData.hourlyTemperatureData[index] + "°"
+                                        temperature: homePageData.uiDisplayData.hourlyTemperatureData[index] + qsTr("°")
                                         icon: homePageData.uiDisplayData.hourlyIconCodeData[index]
                                         backgroundColor: page.currentTimeIndex === index ? appThemes.selectedColor : appThemes.unselectedColor
 
@@ -444,8 +444,10 @@ DAppPage {
 
             width: parent.width / 2
             height: dp(24)
-            anchors.bottom: parent.bottom
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors {
+                bottom: parent.bottom
+                horizontalCenter: parent.horizontalCenter
+            }
             visible: false
         }
     }
@@ -453,5 +455,7 @@ DAppPage {
     Component.onCompleted: {
         console.log("Components completed")
         homePageData.requestHourlyWeather("49.90","10.90","Europe/Berlin")
+        placesPageData.searchSelectedIndex = 1
+        placesPageData.initialDefaultRequestPlaces("Bamberg")
     }
 }

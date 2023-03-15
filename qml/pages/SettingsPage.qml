@@ -35,8 +35,8 @@ DAppPage {
         anchors.centerIn: parent
 
         Item {
-            Layout.fillHeight: true
             Layout.fillWidth: true
+            Layout.fillHeight: true
 
             ListView {
                 width: parent.width
@@ -66,9 +66,10 @@ DAppPage {
                 width: parent.width
                 height: dp(32)
                 anchors.bottom: parent.bottom
+
                 DText {
-                    Layout.fillHeight: true
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     text: qsTr("Made By Shrinidhi Upadhyaya")
                     font.pixelSize: dp(12)
                     horizontalAlignment: Text.AlignHCenter

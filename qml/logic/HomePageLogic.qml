@@ -33,6 +33,8 @@ Item {
         property bool windSpeedNeeded: true
         property bool windDirectionNeeded: true
         property bool soilMoistureNeeded: true
+        property bool timezoneNeeded: true
+
 
         readonly property string temperatureCode: temperatureNeeded ? "temperature_2m," : ""
         readonly property string relativeHumidityCode: relativeHumidityNeeded ? "relativehumidity_2m,": ""
@@ -42,10 +44,11 @@ Item {
         readonly property string windSpeedCode: windSpeedNeeded ? "windspeed_10m," : ""
         readonly property string windDirectionCode: windDirectionNeeded ? "winddirection_10m," : ""
         readonly property string soilMoistureCode: soilMoistureNeeded ? "soil_moisture_0_1cm" : ""
+        readonly property string timezoneCode:  "&timezone=" + hourly.timezone
 
         function featuresNeeded() {
             hourly.subURL = features.temperatureCode + features.relativeHumidityCode + features.precipitationCode + features.weatherCode + features.surfacePressureCode
-                    + features.windSpeedCode + features.windDirectionCode + features.soilMoistureCode;
+                    + features.windSpeedCode + features.windDirectionCode + features.soilMoistureCode + timezoneCode;
         }
     }
 
@@ -150,6 +153,8 @@ Item {
                 uiDisplayData.hourlyTemperatureData = parsedTemperatureData
                 uiDisplayData.hourlyIconCodeData = parsedWeatherIconData
                 uiDisplayData.detailsValues = tempDetailsValues
+
+                console.log("@@@@@@@@@@@@@@@@@@",uiDisplayData.hourlyIconCodeData[0])
                 uiDisplayData.currentWeatherDescription = appData.weatherIcon.classifyWeatherIconDescription(parsedWeatherIconDescription)
 
 

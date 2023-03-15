@@ -117,10 +117,11 @@ Item {
 
                 parsedWeatherIconCode = parsedWeatherIconCode.slice(index-1)
                 parsedWeatherIconCode = parsedWeatherIconCode[0]
+                console.log("PlacesPageLogic: Printing the parsed weather icon code1:",parsedWeatherIconCode)
+
                 parsedWeatherIconCode = appData.weatherIcon.getWeatherIcon(parsedWeatherIconCode)
 
-                console.log("PlacesPageLogic: PlaceName:",placeName)
-                console.log("PlacesPageLogic: Temperature:",parsedTemperatureData)
+                console.log("PlacesPageLogic: Printing the parsed weather icon code2:",parsedWeatherIconCode)
                 cityListModel.append({"place":placeName,"temperature":parsedTemperatureData,"weatherIcon":parsedWeatherIconCode,"weatherDescription":parsedWeatherIconDescription,"sunriseTime":"","sunsetTime":""})
 
                 var tempPlacesDataStack=placesDataStack;
@@ -184,6 +185,8 @@ Item {
 
             cityListModel.setProperty(cityListModel.count-1,"sunriseTime",sunriseTime)
             cityListModel.setProperty(cityListModel.count-1,"sunsetTime",sunsetTime)
+
+            clearSearchData();
         }
     }
 
@@ -369,8 +372,6 @@ Item {
         countryList = []
         placeList = []
     }
-
-
 
     function loadSearchRequest() {
         if(placesPageData.placeList.length > 0) {

@@ -29,7 +29,7 @@ DAppPage {
             width: parent.width
             anchors {
                 top: parent.top
-                bottom: button.top
+                bottom: addButton.top
                 bottomMargin: appThemes.margin
             }
 
@@ -44,7 +44,7 @@ DAppPage {
                 description: model.weatherDescription
                 iconText1: model.sunriseTime
                 iconText2: model.sunsetTime
-                icon: model.weatherIcon
+                icon: "/bigIcons/" + model.weatherIcon
                 deleteModeOn: placesPageData.deleteItems[index]
 
                 onClicked: {
@@ -65,8 +65,8 @@ DAppPage {
             }
         }
 
-        RoundButton {
-            id: button
+        DRoundButton {
+            id: addButton
 
             width: appThemes.circularButtonSize
             height: appThemes.circularButtonSize
@@ -76,21 +76,16 @@ DAppPage {
                 right: parent.right
                 rightMargin: appThemes.margin
             }
-            background: Rectangle {
-                anchors.fill: parent
-                radius: parent.radius
-                color: button.pressed ? appThemes.primaryPressedColor : appThemes.buttonColor
-                border.color: appThemes.frameBorderColor
-            }
-            icon.source: appThemes.setIcon("add")
-            icon.color: appThemes.primaryIconColor
+
+            iconSource: appThemes.setIcon("add")
 
             onClicked: {
+                console.log("Clicked")
                 popup.open()
             }
         }
 
-        RoundButton {
+        DRoundButton {
             id: deleteButton
 
             width: placesPageData.enableDeletion ? appThemes.circularButtonSize : 0
@@ -102,14 +97,9 @@ DAppPage {
                 leftMargin: appThemes.margin
             }
             visible: placesPageData.enableDeletion
-            background: Rectangle {
-                anchors.fill: parent
-                radius: parent.radius
-                color: deleteButton.pressed ? "#ED5E68" : "#F34542"
-                border.color: appThemes.frameBorderColor
-            }
-            icon.source: appThemes.setIcon("deleteIcon")
-            icon.color: appThemes.primaryIconColor
+            backgroundColor: appThemes.deleteButtonColor
+            pressedColor: appThemes.deleteButtonPressedColor
+            iconSource: appThemes.setIcon("deleteIcon")
 
             Behavior on width {
                 SpringAnimation { spring: 2; damping: 0.2; duration: 100}
@@ -223,9 +213,9 @@ DAppPage {
         }
     }
 
-    Component.onCompleted: {
-        console.log("Places Component Completed@@@@@@@@@@@@@@@@@@@@@@@@@")
-        placesPageData.searchSelectedIndex = 1
-        placesPageData.initialDefaultRequestPlaces("Bamberg")
-    }
+//    Component.onCompleted: {
+//        console.log("Places Component Completed@@@@@@@@@@@@@@@@@@@@@@@@@")
+//        placesPageData.searchSelectedIndex = 1
+//        placesPageData.initialDefaultRequestPlaces("Bamberg")
+//    }
 }
